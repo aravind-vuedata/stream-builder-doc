@@ -728,6 +728,8 @@ blockquote.quote-large {
 html {
 	scroll-behavior: smooth;
 	scroll-padding-top: 12px;
+	background: var(--bg-0);
+	overscroll-behavior-y: none;
 }
 
 body {
@@ -737,6 +739,7 @@ body {
 		radial-gradient(720px circle at 95% 10%, rgba(59, 130, 246, 0.16), transparent 55%),
 		linear-gradient(160deg, var(--bg-0) 0%, var(--bg-1) 45%, var(--bg-2) 100%);
 	background-attachment: fixed;
+	min-height: 100dvh;
 }
 
 h1, h2, h3, strong {
@@ -1059,6 +1062,24 @@ figure img:hover {
 	word-break: normal !important;
 	line-height: 1.45;
 	tab-size: 2;
+}
+
+/* Force dark code blocks even when Prism/default styles are injected inline */
+pre.code,
+pre.code[class*="language-"],
+pre[class*="language-"] {
+	background: linear-gradient(180deg, #020617 0%, #0b1222 100%) !important;
+	color: #e2e8f0 !important;
+	border: 1px solid rgba(56, 189, 248, 0.3) !important;
+	border-radius: 10px !important;
+}
+
+pre.code code,
+pre[class*="language-"] code,
+code[class*="language-"] {
+	background: transparent !important;
+	color: #e2e8f0 !important;
+	text-shadow: none !important;
 }
 
 .proto-controls {
