@@ -808,6 +808,35 @@ body.auth-locked article.page {
 	cursor: pointer;
 }
 
+.auth-divider {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	color: #94a3b8;
+	font-size: 0.78rem;
+	margin: 0.5rem 0 0.7rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: rgba(148, 163, 184, 0.35);
+}
+
+.auth-ms {
+	width: 100%;
+	border: 1px solid rgba(56, 189, 248, 0.32);
+	border-radius: 10px;
+	padding: 0.56rem 0.7rem;
+	background: rgba(15, 23, 42, 0.85);
+	color: #e2e8f0;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
 .auth-error {
 	min-height: 1.1rem;
 	margin: 0.55rem 0 0;
@@ -1794,10 +1823,13 @@ message SocialLoginWidget {
   optional stream.ui.atoms.Button apple_button = 2;
   optional stream.ui.atoms.Button facebook_button = 3;
 }</code></pre></div></div></details></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80af-9510-fac00a80080b" class="">
-</p></div></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span><script>
+</p></div></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span><script src="https://alcdn.msauth.net/browser/2.39.0/js/msal-browser.min.js"></script><script>
 	(() => {
 		const body = document.body;
 		const AUTH_KEY = "stream-doc-auth-ok";
+		const ALLOWED_MS_DOMAIN = "vuedata.com";
+		const MS_CLIENT_ID = "YOUR_AZURE_APP_CLIENT_ID";
+		const MS_TENANT_ID = "common";
 		const lockPage = () => body.classList.add("auth-locked");
 		const unlockPage = () => body.classList.remove("auth-locked");
 		const hasAccess = sessionStorage.getItem(AUTH_KEY) === "1";
@@ -1805,13 +1837,27 @@ message SocialLoginWidget {
 			lockPage();
 			const gate = document.createElement("div");
 			gate.className = "auth-gate";
-			gate.innerHTML = `<form class="auth-card" autocomplete="off"><h3>Login Required</h3><p>Enter username and password to access this page.</p><input class="auth-field" name="username" type="text" placeholder="Username" required /><input class="auth-field" name="password" type="password" placeholder="Password" required /><button class="auth-submit" type="submit">Login</button><p class="auth-error" aria-live="polite"></p></form>`;
+			gate.innerHTML = `<form class="auth-card" autocomplete="off"><h3>Login Required</h3><p>Enter username and password to access this page.</p><input class="auth-field" name="username" type="text" placeholder="Username" required /><input class="auth-field" name="password" type="password" placeholder="Password" required /><button class="auth-submit" type="submit">Login</button><div class="auth-divider">or</div><button class="auth-ms" type="button">Sign in with Microsoft</button><p class="auth-error" aria-live="polite"></p></form>`;
 			document.body.appendChild(gate);
 			const form = gate.querySelector("form");
 			const userInput = gate.querySelector("input[name='username']");
 			const passInput = gate.querySelector("input[name='password']");
+			const msButton = gate.querySelector(".auth-ms");
 			const errorEl = gate.querySelector(".auth-error");
+			let msalApp = null;
 			if (form && userInput && passInput && errorEl) {
+				if (window.msal && MS_CLIENT_ID !== "YOUR_AZURE_APP_CLIENT_ID") {
+					msalApp = new window.msal.PublicClientApplication({
+						auth: {
+							clientId: MS_CLIENT_ID,
+							authority: `https://login.microsoftonline.com/${MS_TENANT_ID}`
+						}
+					});
+				}
+				if (msButton && !msalApp) {
+					msButton.disabled = true;
+					msButton.textContent = "Microsoft sign-in not configured";
+				}
 				setTimeout(() => userInput.focus(), 0);
 				form.addEventListener("submit", (event) => {
 					event.preventDefault();
@@ -1827,6 +1873,27 @@ message SocialLoginWidget {
 						passInput.focus();
 					}
 				});
+				if (msButton && msalApp) {
+					msButton.addEventListener("click", async () => {
+						errorEl.textContent = "";
+						try {
+							const response = await msalApp.loginPopup({
+								scopes: ["openid", "profile", "email"]
+							});
+							const email = (response && response.account && response.account.username ? response.account.username : "").toLowerCase();
+							if (!email.endsWith(`@${ALLOWED_MS_DOMAIN}`)) {
+								await msalApp.logoutPopup({ account: response.account });
+								errorEl.textContent = `Only @${ALLOWED_MS_DOMAIN} accounts are allowed.`;
+								return;
+							}
+							sessionStorage.setItem(AUTH_KEY, "1");
+							unlockPage();
+							gate.remove();
+						} catch (_) {
+							errorEl.textContent = "Microsoft sign-in failed. Try again.";
+						}
+					});
+				}
 			}
 		}
 		const revealTargets = Array.from(document.querySelectorAll("h2, h3, p, li, table, figure, pre, details"));
