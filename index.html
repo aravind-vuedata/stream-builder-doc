@@ -954,14 +954,27 @@ table tbody tr:hover {
 	background: rgba(14, 116, 144, 0.28);
 }
 
-figure img {
-	transition: transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease), filter var(--motion-fast) var(--motion-ease);
+@keyframes image-border-shimmer {
+	0% { background-position: 0% 50%; }
+	100% { background-position: 220% 50%; }
+}
+
+figure.image img {
+	display: block;
+	box-sizing: border-box;
+	padding: 4px;
+	border-radius: 14px;
+	background: linear-gradient(110deg, rgba(20, 184, 166, 0.85) 0%, rgba(34, 211, 238, 1) 28%, rgba(186, 230, 253, 1) 45%, rgba(56, 189, 248, 0.95) 62%, rgba(20, 184, 166, 0.85) 100%);
+	background-size: 220% 220%;
+	animation: image-border-shimmer 2.1s linear infinite;
+	box-shadow: 0 0 0 1px rgba(186, 230, 253, 0.75), 0 0 18px rgba(34, 211, 238, 0.45);
+	transition: transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease), filter var(--motion-fast) var(--motion-ease), background-position var(--motion-fast) var(--motion-ease);
 	transform-origin: center;
 }
 
 figure img:hover {
 	transform: scale(1.02);
-	box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 0 0 1px rgba(186, 230, 253, 0.95), 0 0 24px rgba(34, 211, 238, 0.62), 0 10px 20px rgba(0, 0, 0, 0.18);
 	filter: saturate(1.06);
 }
 
@@ -994,6 +1007,60 @@ figure img:hover {
 .back-to-top:focus-visible {
 	background: #115e59;
 	outline: none;
+}
+
+.image-lightbox {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	background: rgba(2, 6, 23, 0.82);
+	backdrop-filter: blur(5px);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity var(--motion-fast) var(--motion-ease);
+	z-index: 1200;
+}
+
+.image-lightbox.is-open {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.image-lightbox-frame {
+	max-width: min(92vw, 1200px);
+	max-height: 82vh;
+	overflow: auto;
+}
+
+.image-lightbox-img {
+	display: block;
+	max-width: 100%;
+	max-height: 82vh;
+	object-fit: contain;
+	transform-origin: center center;
+	transition: transform var(--motion-fast) var(--motion-ease);
+}
+
+.image-lightbox-controls {
+	position: fixed;
+	right: 18px;
+	top: 18px;
+	display: flex;
+	gap: 0.5rem;
+}
+
+.image-lightbox-btn {
+	border: 1px solid rgba(56, 189, 248, 0.42);
+	background: rgba(15, 23, 42, 0.88);
+	color: #e2e8f0;
+	border-radius: 999px;
+	width: 2.2rem;
+	height: 2.2rem;
+	font-size: 1.2rem;
+	font-weight: 700;
+	line-height: 1;
+	cursor: pointer;
 }
 
 .proto-heading-hidden {
@@ -1324,6 +1391,10 @@ table td, table th {
 	.js-reveal {
 		opacity: 1;
 		transform: none;
+	}
+
+	figure.image img {
+		animation: none !important;
 	}
 }
 	
@@ -1881,11 +1952,98 @@ message SocialLoginWidget {
 	backToTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 	document.body.appendChild(backToTop);
 
-	const toggleBackToTop = () => {
-		const shouldShow = window.scrollY > 520;
-		backToTop.classList.toggle("is-visible", shouldShow);
-	};
-	toggleBackToTop();
-	window.addEventListener("scroll", toggleBackToTop, { passive: true });
-})();
-</script></body></html>
+		const toggleBackToTop = () => {
+			const shouldShow = window.scrollY > 520;
+			backToTop.classList.toggle("is-visible", shouldShow);
+		};
+		toggleBackToTop();
+		window.addEventListener("scroll", toggleBackToTop, { passive: true });
+
+		const lightbox = document.createElement("div");
+		lightbox.className = "image-lightbox";
+		lightbox.setAttribute("aria-hidden", "true");
+		const lightboxControls = document.createElement("div");
+		lightboxControls.className = "image-lightbox-controls";
+		const zoomOutBtn = document.createElement("button");
+		zoomOutBtn.type = "button";
+		zoomOutBtn.className = "image-lightbox-btn";
+		zoomOutBtn.textContent = "-";
+		zoomOutBtn.setAttribute("aria-label", "Zoom out");
+		const zoomInBtn = document.createElement("button");
+		zoomInBtn.type = "button";
+		zoomInBtn.className = "image-lightbox-btn";
+		zoomInBtn.textContent = "+";
+		zoomInBtn.setAttribute("aria-label", "Zoom in");
+		const closeBtn = document.createElement("button");
+		closeBtn.type = "button";
+		closeBtn.className = "image-lightbox-btn";
+		closeBtn.textContent = "×";
+		closeBtn.setAttribute("aria-label", "Close image");
+		lightboxControls.appendChild(zoomOutBtn);
+		lightboxControls.appendChild(zoomInBtn);
+		lightboxControls.appendChild(closeBtn);
+		const lightboxFrame = document.createElement("div");
+		lightboxFrame.className = "image-lightbox-frame";
+		const lightboxImg = document.createElement("img");
+		lightboxImg.className = "image-lightbox-img";
+		lightboxImg.alt = "";
+		lightboxFrame.appendChild(lightboxImg);
+		lightbox.appendChild(lightboxControls);
+		lightbox.appendChild(lightboxFrame);
+		document.body.appendChild(lightbox);
+
+		let zoomLevel = 1;
+		const applyZoom = () => {
+			lightboxImg.style.transform = `scale(${zoomLevel})`;
+		};
+		const setZoom = (value) => {
+			zoomLevel = Math.min(3, Math.max(1, value));
+			applyZoom();
+		};
+		const openLightbox = (src, altText = "") => {
+			lightboxImg.src = src;
+			lightboxImg.alt = altText;
+			setZoom(1);
+			lightbox.classList.add("is-open");
+			lightbox.setAttribute("aria-hidden", "false");
+		};
+		const closeLightbox = () => {
+			lightbox.classList.remove("is-open");
+			lightbox.setAttribute("aria-hidden", "true");
+		};
+
+		zoomInBtn.addEventListener("click", (event) => {
+			event.stopPropagation();
+			setZoom(zoomLevel + 0.25);
+		});
+		zoomOutBtn.addEventListener("click", (event) => {
+			event.stopPropagation();
+			setZoom(zoomLevel - 0.25);
+		});
+		closeBtn.addEventListener("click", (event) => {
+			event.stopPropagation();
+			closeLightbox();
+		});
+		lightbox.addEventListener("click", (event) => {
+			if (!lightboxFrame.contains(event.target)) closeLightbox();
+		});
+		document.addEventListener("keydown", (event) => {
+			if (!lightbox.classList.contains("is-open")) return;
+			if (event.key === "Escape") closeLightbox();
+			if (event.key === "+" || event.key === "=") setZoom(zoomLevel + 0.25);
+			if (event.key === "-") setZoom(zoomLevel - 0.25);
+		});
+
+		document.addEventListener("click", (event) => {
+			const target = event.target;
+			if (!(target instanceof Element)) return;
+			const link = target.closest("figure a[href]");
+			if (!link) return;
+			const img = link.querySelector("img");
+			if (!img) return;
+			event.preventDefault();
+			event.stopPropagation();
+			openLightbox(link.getAttribute("href") || img.getAttribute("src") || "", img.getAttribute("alt") || "");
+		}, true);
+	})();
+	</script></body></html>
