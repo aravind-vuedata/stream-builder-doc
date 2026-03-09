@@ -1124,6 +1124,13 @@ pre code .token.comment {
 	font-style: italic;
 }
 
+/* Deterministic proto highlighting classes (JS-injected) */
+.proto-k { color: #7cc7ff; }
+.proto-t { color: #f3ee9b; }
+.proto-s { color: #b8e35a; }
+.proto-n { color: #ffcf7d; }
+.proto-c { color: #7f8ea3; font-style: italic; }
+
 .proto-controls {
 	position: absolute;
 	right: 0.8rem;
@@ -1643,7 +1650,7 @@ message SocialLoginWidget {
 		revealVisibleTargets();
 	});
 
-	const headings = Array.from(document.querySelectorAll("h2")).filter((h) => h.textContent && h.textContent.trim().length > 0);
+	const headings = Array.from(document.querySelectorAll("h1, h2, h3, h4, h5, h6")).filter((h) => h.textContent && h.textContent.trim().length > 0);
 	if (headings.length > 1) {
 		const nav = document.createElement("nav");
 		nav.className = "section-nav";
@@ -1651,10 +1658,19 @@ message SocialLoginWidget {
 		const title = document.createElement("h4");
 		title.textContent = "Jump to section";
 		nav.appendChild(title);
+		const usedIds = new Set(Array.from(document.querySelectorAll("[id]")).map((el) => el.id));
 
 		headings.forEach((heading) => {
 			if (!heading.id) {
-				heading.id = heading.textContent.trim().toLowerCase().replace(/[^\w]+/g, "-");
+				const baseId = heading.textContent.trim().toLowerCase().replace(/[^\w]+/g, "-").replace(/^-+|-+$/g, "") || "section";
+				let nextId = baseId;
+				let count = 2;
+				while (usedIds.has(nextId)) {
+					nextId = `${baseId}-${count}`;
+					count += 1;
+				}
+				heading.id = nextId;
+				usedIds.add(nextId);
 			}
 			const link = document.createElement("a");
 			link.href = "#" + heading.id;
