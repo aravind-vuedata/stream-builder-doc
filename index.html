@@ -1,0 +1,1038 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Stream Builder Tech Doc</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="31e76402-5bf5-805f-a2b0-fcdb157f9be7" class="page sans"><header><h1 class="page-title" dir="auto">Stream Builder Tech Doc</h1><p class="page-description" dir="auto"></p></header><div class="page-body"><div style="display:contents" dir="auto"><p id="31e76402-5bf5-809e-85fb-f45f17cb0452" class="">
+</p></div><div style="display:contents" dir="auto"><h2 id="31e76402-5bf5-808b-a06d-dbca03baf714" class="">Goal</h2></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8060-a859-f739a617b36c" class="">Enable non-engineering users to create pages, place widgets, and customize each widget from admin tools, while mobile apps render UI from server JSON without app releases.<br/></p></div><div style="display:contents" dir="auto"><h2 id="31e76402-5bf5-8095-8cf7-c5d2885ca556" class="">Scope</h2></div><div style="display:contents" dir="auto"><ul id="31e76402-5bf5-80db-8bf9-feddf8abae8d" class="bulleted-list"><li style="list-style-type:disc">Page composition and ordering</li></ul></div><div style="display:contents" dir="auto"><ul id="31e76402-5bf5-80ac-b370-e48cbaa4af4b" class="bulleted-list"><li style="list-style-type:disc">Widget configuration and customization</li></ul></div><div style="display:contents" dir="auto"><ul id="31e76402-5bf5-80c4-a8d3-cf7d6660e49a" class="bulleted-list"><li style="list-style-type:disc">Contract versioning and backward compatibility</li></ul></div><div style="display:contents" dir="auto"><ul id="31e76402-5bf5-80ed-9db8-c47b261d47ab" class="bulleted-list"><li style="list-style-type:disc">Atom-level component contract standardization</li></ul></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8094-9913-fdd87c94806b" class="">
+</p></div><div style="display:contents" dir="auto"><h2 id="31e76402-5bf5-803e-891d-ecff42a91f3d" class="">High-Level Flow</h2></div><div style="display:contents" dir="auto"><ol type="1" id="31e76402-5bf5-803d-8bd8-e1098071b97f" class="numbered-list" start="1"><li>Creator builds page in Stream Builder CMS.</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="31e76402-5bf5-8015-9f7d-ef068810f383" class="numbered-list" start="2"><li>CMS stores page config JSON.</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="31e76402-5bf5-8064-a10d-f0958088ac3b" class="numbered-list" start="3"><li>Mobile app requests page by  <code>pageId</code>.</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="31e76402-5bf5-800b-a1f2-f8176a4e8ab4" class="numbered-list" start="4"><li>Backend returns typed JSON contract.</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="31e76402-5bf5-8042-a95a-cec6ce72f314" class="numbered-list" start="5"><li>Client renderer maps <code>widget.type</code> to native component.</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="31e76402-5bf5-802d-81f3-d1aebff473b0" class="numbered-list" start="6"><li>Client executes actions/events from contract.</li></ol></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8091-9530-ed7d0ea9d027" class="">
+</p></div><div style="display:contents" dir="auto"><h2 id="31e76402-5bf5-80b3-9c00-d35fbdf8256e" class="">Data Flow</h2></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-808b-bcf1-c170c7c741ec" class=""><code>CMS</code></p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8088-be6e-cfa9d506fe51" class=""><code>↓</code></p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8029-852b-e163167cdf19" class=""><code>Page Config JSON</code></p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8064-ae7b-d0320090e8b0" class=""><code>↓</code></p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80e8-88be-e0517472061a" class=""><code>API</code></p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80bb-bda1-f6d3c81859fc" class=""><code>↓</code></p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-802d-8f96-decf91214bf0" class=""><code>Mobile App</code></p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80ee-ba16-db5003d2e7ca" class=""><code>↓</code></p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80fd-8856-d2361ad4befc" class=""><code>Renderer</code></p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8004-b96f-e096a4602d4f" class=""><code>↓</code></p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8028-8e1e-e9b222b094b8" class=""><code>Widget → Layout → Atom</code> </p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-801e-840d-d49a06aa2409" class="">
+</p></div><div style="display:contents" dir="auto"><h2 id="31e76402-5bf5-8031-ad32-eae4db93bd82" class=""><strong>Atom-Level Component Contract</strong></h2></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-80e2-8f2e-c3b06e928357" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80bc-b41b-fc5a92907e97"><th id="`IMz" class="simple-table-header-color simple-table-header"><strong>Atom</strong></th><th id="I?Jk" class="simple-table-header-color simple-table-header"><strong>Purpose</strong></th><th id="F\NX" class="simple-table-header-color simple-table-header"><strong>Required Fields</strong></th><th id="h`vm" class="simple-table-header-color simple-table-header"><strong>Optional Fields</strong></th><th id="{]iy" class="simple-table-header-color simple-table-header"><strong>Example</strong></th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8004-ae55-f021d3714d80"><td id="`IMz" class="">Text</td><td id="I?Jk" class="">Typography rendering</td><td id="F\NX" class="">text, variant</td><td id="h`vm" class="">color, maxLines, alignment</td><td id="{]iy" class="">{&quot;text&quot;:&quot;Hello&quot;,&quot;variant&quot;:&quot;body_md&quot;}</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8051-93f9-fd2dc00fd093"><td id="`IMz" class="">Icon</td><td id="I?Jk" class="">Symbol rendering</td><td id="F\NX" class="">name</td><td id="h`vm" class="">size, color</td><td id="{]iy" class="">{&quot;name&quot;:&quot;chevron_right&quot;,&quot;size&quot;:20}</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80df-ae89-dea46468f0ee"><td id="`IMz" class="">Image</td><td id="I?Jk" class="">Remote/local image</td><td id="F\NX" class="">url</td><td id="h`vm" class="">aspectRatio, contentScale, altText</td><td id="{]iy" class="">{&quot;url&quot;:&quot;https://...&quot;,&quot;contentScale&quot;:&quot;cover&quot;}</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-800e-b298-e619a166927a"><td id="`IMz" class="">Button</td><td id="I?Jk" class="">Action trigger</td><td id="F\NX" class="">label, variant</td><td id="h`vm" class="">size, leadingIcon, disabled</td><td id="{]iy" class="">{&quot;label&quot;:&quot;Buy&quot;,&quot;variant&quot;:&quot;primary&quot;}</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8013-8831-eecaa93df077"><td id="`IMz" class="">Badge</td><td id="I?Jk" class="">Small status tag</td><td id="F\NX" class="">text</td><td id="h`vm" class="">tone, icon</td><td id="{]iy" class="">{&quot;text&quot;:&quot;New&quot;,&quot;tone&quot;:&quot;success&quot;}</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80c4-a482-fb5cd839e4e3"><td id="`IMz" class="">Chip</td><td id="I?Jk" class="">Selectable token</td><td id="F\NX" class="">text</td><td id="h`vm" class="">selected, leadingIcon</td><td id="{]iy" class="">{&quot;text&quot;:&quot;Electronics&quot;,&quot;selected&quot;:true}</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-808b-b990-f07d3be4b93f"><td id="`IMz" class="">Divider</td><td id="I?Jk" class="">Visual separator</td><td id="F\NX" class="">thickness</td><td id="h`vm" class="">color, insetStart, insetEnd</td><td id="{]iy" class="">{&quot;thickness&quot;:1,&quot;color&quot;:&quot;#EEE&quot;}</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8099-bfd4-c7a79763b05a"><td id="`IMz" class="">Spacer</td><td id="I?Jk" class="">Empty layout gap</td><td id="F\NX" class="">height</td><td id="h`vm" class="">width</td><td id="{]iy" class="">{&quot;height&quot;:16}</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-809d-99f1-e2b9ea01bafe" class="">
+</p></div><div style="display:contents" dir="auto"><h2 id="31e76402-5bf5-800f-8154-c767418613dd" class="">Proto</h2></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Hierarchy </summary><div class="indented"><div style="display:contents" dir="ltr"><figure id="31e76402-5bf5-8019-a2c1-c4fc71cdd36c" class="image" style="text-align:center"><a href="Stream%20Builder%20Tech%20Doc/Screenshot_2026-03-09_at_1.59.09_PM.png"><img style="width:288px" src="Stream%20Builder%20Tech%20Doc/Screenshot_2026-03-09_at_1.59.09_PM.png"/></a><figcaption>Page Hierarchy</figcaption></figure></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8096-95f5-c66ee7a5ece2" class="">
+</p></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-80c8-9dc3-dbc08f620309"/></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8071-8a8e-f30e5789c35c" class="">
+</p></div><div style="display:contents" dir="ltr"><figure id="31e76402-5bf5-8088-854b-d6d9c4d8138e" class="image" style="text-align:center"><a href="Stream%20Builder%20Tech%20Doc/Screenshot_2026-03-09_at_1.39.55_PM.png"><img style="width:288px" src="Stream%20Builder%20Tech%20Doc/Screenshot_2026-03-09_at_1.39.55_PM.png"/></a><figcaption>Proto Hierarchy</figcaption></figure></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">UI Atomic Components</summary><div class="indented"><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Alignment</summary><div class="indented"><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8056-8cb6-e7e31a781880" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80b8-ad28-c4998fa97f33"><th id="tGY`" class="simple-table-header-color simple-table-header">Field</th><th id="La^i" class="simple-table-header-color simple-table-header">Type</th><th id="Fzah" class="simple-table-header-color simple-table-header">Required</th><th id="Dpb:" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-802f-90d9-d5c8be2f3f5e"><td id="tGY`" class="">value</td><td id="La^i" class="">enum</td><td id="Fzah" class="">Yes</td><td id="Dpb:" class="">Alignment of UI element</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80f6-b177-f049d3ff7e6e" class="">Enum Values</h3></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-804a-8a27-e3b570de76c9" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-803d-8d37-e03f29d55796"><th id="uihk" class="simple-table-header-color simple-table-header">Value</th><th id="zurX" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8029-a481-dfe460270377"><td id="uihk" class="">ALIGNMENT_UNSPECIFIED</td><td id="zurX" class="">Default fallback</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-807f-9566-e7afdda1d53a"><td id="uihk" class="">START</td><td id="zurX" class="">Start / Left alignment</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8021-928b-ef292301d492"><td id="uihk" class="">CENTER</td><td id="zurX" class="">Center alignment</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8025-a02b-caabcc790187"><td id="uihk" class="">END</td><td id="zurX" class="">End / Right alignment</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-8064-9b6d-de55bd8fe00c" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-8075-8fce-f964d30f4729" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.atoms;
+
+enum Alignment {
+  ALIGNMENT_UNSPECIFIED = 0;
+  START = 1;
+  CENTER = 2;
+  END = 3;
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Text</summary><div class="indented"><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-806d-8dfb-eeb9c94f4905" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8006-811e-ea6ac8d1db7e"><th id="E{Ka" class="simple-table-header-color simple-table-header">Field</th><th id="cSVv" class="simple-table-header-color simple-table-header">Type</th><th id="Yy}X" class="simple-table-header-color simple-table-header">Required</th><th id="@lHD" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8089-9a75-e4e5986e4368"><td id="E{Ka" class="">text</td><td id="cSVv" class="">string</td><td id="Yy}X" class="">Yes</td><td id="@lHD" class="">Text content</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ef-87b9-c91a9ba3a8f8"><td id="E{Ka" class="">variant</td><td id="cSVv" class="">TextVariant</td><td id="Yy}X" class="">Yes</td><td id="@lHD" class="">Typography style</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8002-b5e1-ddf504faa7df"><td id="E{Ka" class="">color</td><td id="cSVv" class="">string</td><td id="Yy}X" class="">No</td><td id="@lHD" class="">Hex color</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80dc-b588-d36476c40781"><td id="E{Ka" class="">max_lines</td><td id="cSVv" class="">int32</td><td id="Yy}X" class="">No</td><td id="@lHD" class="">Maximum number of lines</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8084-ae81-d136794c2b7c"><td id="E{Ka" class="">alignment</td><td id="cSVv" class="">Alignment</td><td id="Yy}X" class="">No</td><td id="@lHD" class="">Text alignment</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-8001-b518-e470cdba1304" class="">TextVariant Enum</h3></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-80db-8c05-e8d228c6d750" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-805d-a2a9-f7f60a567526"><th id="p]Si" class="simple-table-header-color simple-table-header">Value</th><th id="[^k`" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8048-a457-f3faa55ed3dc"><td id="p]Si" class="">TEXT_VARIANT_UNSPECIFIED</td><td id="[^k`" class="">Default fallback</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80b2-98f9-d33fa3c0ce20"><td id="p]Si" class="">BODY_SM</td><td id="[^k`" class="">Small body text</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80a1-a0bc-f2d71f0c93cf"><td id="p]Si" class="">BODY_MD</td><td id="[^k`" class="">Medium body text</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80d5-a20e-da9018a14a17"><td id="p]Si" class="">BODY_LG</td><td id="[^k`" class="">Large body text</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80a8-92a7-d9836b7fd58e"><td id="p]Si" class="">TITLE_SM</td><td id="[^k`" class="">Small title</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8023-8e84-f441f5a1bced"><td id="p]Si" class="">TITLE_MD</td><td id="[^k`" class="">Medium title</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8086-92cc-f059d038fe50"><td id="p]Si" class="">TITLE_LG</td><td id="[^k`" class="">Large title</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-807f-9440-e638a2ab8072"><td id="p]Si" class="">CAPTION</td><td id="[^k`" class="">Caption text</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-8032-a600-fdf832616273" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-807b-b5b0-eacb6cd870b8" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.atoms;
+
+import &quot;ui/atoms/alignment.proto&quot;;
+
+enum TextVariant {
+  TEXT_VARIANT_UNSPECIFIED = 0;
+  BODY_SM = 1;
+  BODY_MD = 2;
+  BODY_LG = 3;
+  TITLE_SM = 4;
+  TITLE_MD = 5;
+  TITLE_LG = 6;
+  CAPTION = 7;
+}
+
+message Text {
+  string text = 1;
+  TextVariant variant = 2;
+
+  optional string color = 3;
+  optional int32 max_lines = 4;
+  optional Alignment alignment = 5;
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Icon</summary><div class="indented"><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-80e7-a13a-ee2814dda94c" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80b2-877b-e1cc47a93578"><th id="&lt;:X[" class="simple-table-header-color simple-table-header">Field</th><th id="{pBK" class="simple-table-header-color simple-table-header">Type</th><th id="wAHq" class="simple-table-header-color simple-table-header">Required</th><th id="f=TA" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ab-8fbf-dcd93b344313"><td id="&lt;:X[" class="">name</td><td id="{pBK" class="">string</td><td id="wAHq" class="">Yes</td><td id="f=TA" class="">Icon name</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8084-961a-c9a3413d25e2"><td id="&lt;:X[" class="">size</td><td id="{pBK" class="">int32</td><td id="wAHq" class="">No</td><td id="f=TA" class="">Icon size</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-802b-93d0-ca7770129171"><td id="&lt;:X[" class="">color</td><td id="{pBK" class="">string</td><td id="wAHq" class="">No</td><td id="f=TA" class="">Icon color</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-804a-88af-e346963b0861" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-8091-86ec-cf34eb5bbfd2" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.atoms;
+
+message Icon {
+  string name = 1;
+
+  optional int32 size = 2;
+  optional string color = 3;
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Image</summary><div class="indented"><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8028-8e11-c05b4a495070" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-809a-aa5a-d63185854e02"><th id="]bhR" class="simple-table-header-color simple-table-header">Field</th><th id="PRP@" class="simple-table-header-color simple-table-header">Type</th><th id="f~cP" class="simple-table-header-color simple-table-header">Required</th><th id="ZWlO" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-806a-a7fd-f7783be07e84"><td id="]bhR" class="">url</td><td id="PRP@" class="">string</td><td id="f~cP" class="">Yes</td><td id="ZWlO" class="">Image URL</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8084-a353-e9884f5fbaf7"><td id="]bhR" class="">aspect_ratio</td><td id="PRP@" class="">float</td><td id="f~cP" class="">No</td><td id="ZWlO" class="">Image aspect ratio</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80c0-afaa-d41fdb83184c"><td id="]bhR" class="">content_scale</td><td id="PRP@" class="">ContentScale</td><td id="f~cP" class="">No</td><td id="ZWlO" class="">Scaling behaviour</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-803e-8914-f31c693d4fb1"><td id="]bhR" class="">alt_text</td><td id="PRP@" class="">string</td><td id="f~cP" class="">No</td><td id="ZWlO" class="">Accessibility text</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-800a-ba88-ea3472fc2deb" class="">ContentScale Enum</h3></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8084-ac43-ce47578b25e3" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ec-9bf6-c2d693efa1c1"><th id="m:\r" class="simple-table-header-color simple-table-header">Value</th><th id="nQB@" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8023-af3d-f0035aae1e36"><td id="m:\r" class="">CONTENT_SCALE_UNSPECIFIED</td><td id="nQB@" class="">Default behaviour</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80f3-99a6-dd9d2762458e"><td id="m:\r" class="">FIT</td><td id="nQB@" class="">Fit inside container</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8076-86e1-ddf89a1f3848"><td id="m:\r" class="">CROP</td><td id="nQB@" class="">Crop to fill</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8076-9ea1-dc5f57dba066"><td id="m:\r" class="">FILL</td><td id="nQB@" class="">Stretch to fill</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-804b-ad0d-dc04dd3760d8" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-80b7-979f-edd2baedc911" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.atoms;
+
+enum ContentScale {
+  CONTENT_SCALE_UNSPECIFIED = 0;
+  FIT = 1;
+  CROP = 2;
+  FILL = 3;
+}
+
+message Image {
+  string url = 1;
+
+  optional float aspect_ratio = 2;
+  optional ContentScale content_scale = 3;
+  optional string alt_text = 4;
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Button</summary><div class="indented"><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-80e8-a211-e34af71abe38" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-809d-9f56-d04251dcf9f5"><th id="tJoZ" class="simple-table-header-color simple-table-header">Field</th><th id="Qy`b" class="simple-table-header-color simple-table-header">Type</th><th id="_Y=p" class="simple-table-header-color simple-table-header">Required</th><th id="Sgq\" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80c3-98c3-edbc91dae764"><td id="tJoZ" class="">label</td><td id="Qy`b" class="">string</td><td id="_Y=p" class="">Yes</td><td id="Sgq\" class="">Button label</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-802a-b63d-e237a2c2fda6"><td id="tJoZ" class="">variant</td><td id="Qy`b" class="">ButtonVariant</td><td id="_Y=p" class="">Yes</td><td id="Sgq\" class="">Button style</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80b3-a76f-f60637692f19"><td id="tJoZ" class="">size</td><td id="Qy`b" class="">ButtonSize</td><td id="_Y=p" class="">No</td><td id="Sgq\" class="">Button size</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8008-98ab-c505269f561f"><td id="tJoZ" class="">leading_icon</td><td id="Qy`b" class="">Icon</td><td id="_Y=p" class="">No</td><td id="Sgq\" class="">Optional icon</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8094-9c64-d116190786a8"><td id="tJoZ" class="">disabled</td><td id="Qy`b" class="">bool</td><td id="_Y=p" class="">No</td><td id="Sgq\" class="">Disable state</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80d4-a1c2-c07bb42dd23e" class="">ButtonVariant</h3></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-801d-9860-d21265ee30df" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8096-9332-c92f8ebb892e"><th id="sl~K" class="simple-table-header-color simple-table-header">Value</th><th id="wJFY" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8090-a45e-d1910599aabb"><td id="sl~K" class="">BUTTON_VARIANT_UNSPECIFIED</td><td id="wJFY" class="">Default</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80f9-a706-cf2552b6044f"><td id="sl~K" class="">PRIMARY</td><td id="wJFY" class="">Primary action</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-809c-ac42-d264af4e2d0d"><td id="sl~K" class="">SECONDARY</td><td id="wJFY" class="">Secondary action</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8046-b19b-f850ad7cc5e4"><td id="sl~K" class="">TERTIARY</td><td id="wJFY" class="">Low emphasis</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-809c-a2c8-e4567d4cb6fe"><td id="sl~K" class="">LINK</td><td id="wJFY" class="">Link style</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-807e-9d09-fb55b9559d95" class="">ButtonSize</h3></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8048-9fef-ea99b66c401c" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80fe-b84b-f283277396f5"><th id="qson" class="simple-table-header-color simple-table-header">Value</th><th id="SYf^" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8057-9b29-c61025e7868c"><td id="qson" class="">BUTTON_SIZE_UNSPECIFIED</td><td id="SYf^" class="">Default</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80d6-a568-ee6eb8ada210"><td id="qson" class="">SMALL</td><td id="SYf^" class="">Small</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8023-b91e-c9e26be1734d"><td id="qson" class="">MEDIUM</td><td id="SYf^" class="">Medium</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8064-b63c-eff4a6d61f5d"><td id="qson" class="">LARGE</td><td id="SYf^" class="">Large</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-804d-9f9a-f845f9b5735c" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-8075-8b77-e23424b0c2c6" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.atoms;
+
+import &quot;ui/atoms/icon.proto&quot;;
+
+enum ButtonVariant {
+  BUTTON_VARIANT_UNSPECIFIED = 0;
+  PRIMARY = 1;
+  SECONDARY = 2;
+  TERTIARY = 3;
+  LINK = 4;
+}
+
+enum ButtonSize {
+  BUTTON_SIZE_UNSPECIFIED = 0;
+  SMALL = 1;
+  MEDIUM = 2;
+  LARGE = 3;
+}
+
+message Button {
+  string label = 1;
+  ButtonVariant variant = 2;
+
+  optional ButtonSize size = 3;
+  optional Icon leading_icon = 4;
+  optional bool disabled = 5;
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Badge</summary><div class="indented"><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8019-8df9-da8d934a86ff" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-803a-9859-dea044b75cfc"><th id="@GC;" class="simple-table-header-color simple-table-header">Field</th><th id="]g:a" class="simple-table-header-color simple-table-header">Type</th><th id="?\\w" class="simple-table-header-color simple-table-header">Required</th><th id="OOsv" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-809e-ae1e-c76d6b570658"><td id="@GC;" class="">text</td><td id="]g:a" class="">string</td><td id="?\\w" class="">Yes</td><td id="OOsv" class="">Badge text</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-803c-85fe-ef9fa1e4037f"><td id="@GC;" class="">tone</td><td id="]g:a" class="">BadgeTone</td><td id="?\\w" class="">No</td><td id="OOsv" class="">Visual style</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80c8-9865-ee6c0e8512bc"><td id="@GC;" class="">icon</td><td id="]g:a" class="">Icon</td><td id="?\\w" class="">No</td><td id="OOsv" class="">Optional icon</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80aa-a18e-cc32d319302a" class="">BadgeTone</h3></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-80ad-bade-cd12c948d162" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8089-85d9-d41d0c3b866f"><th id="WWEY" class="simple-table-header-color simple-table-header">Value</th><th id="pyC|" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80de-bf55-ca3b3c2a076b"><td id="WWEY" class="">BADGE_TONE_UNSPECIFIED</td><td id="pyC|" class="">Default</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8029-9394-dc6adb4032c1"><td id="WWEY" class="">NEUTRAL</td><td id="pyC|" class="">Neutral</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ac-9272-ca2aae292c70"><td id="WWEY" class="">SUCCESS</td><td id="pyC|" class="">Success</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-800a-aa28-f99d1bfe8847"><td id="WWEY" class="">WARNING</td><td id="pyC|" class="">Warning</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8024-b201-c7b256de9d81"><td id="WWEY" class="">ERROR</td><td id="pyC|" class="">Error</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8030-8847-f2190e86bffe"><td id="WWEY" class="">INFO</td><td id="pyC|" class="">Info</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80c8-adc3-f610b1d072e2" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-80a8-97b6-c13ab5455846" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.atoms;
+
+import &quot;ui/atoms/icon.proto&quot;;
+
+enum BadgeTone {
+  BADGE_TONE_UNSPECIFIED = 0;
+  NEUTRAL = 1;
+  SUCCESS = 2;
+  WARNING = 3;
+  ERROR = 4;
+  INFO = 5;
+}
+
+message Badge {
+  string text = 1;
+
+  optional BadgeTone tone = 2;
+  optional Icon icon = 3;
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Chip</summary><div class="indented"><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8079-8451-e29f57ca4eaf" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-806b-9a9c-d16a257fcf1e"><th id="YElS" class="simple-table-header-color simple-table-header">Field</th><th id=";qm&lt;" class="simple-table-header-color simple-table-header">Type</th><th id="[?G^" class="simple-table-header-color simple-table-header">Required</th><th id="fYiS" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80d6-af82-d7747c6402e8"><td id="YElS" class="">text</td><td id=";qm&lt;" class="">string</td><td id="[?G^" class="">Yes</td><td id="fYiS" class="">Chip label</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8082-99c6-f487d42eae8c"><td id="YElS" class="">selected</td><td id=";qm&lt;" class="">bool</td><td id="[?G^" class="">No</td><td id="fYiS" class="">Selected state</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8083-9b7a-ef343dca9525"><td id="YElS" class="">leading_icon</td><td id=";qm&lt;" class="">Icon</td><td id="[?G^" class="">No</td><td id="fYiS" class="">Optional icon</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80ad-8405-ed1b1276dc4b" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-8085-bbdb-fbfc7b0772c4" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.atoms;
+
+import &quot;ui/atoms/icon.proto&quot;;
+
+message Chip {
+  string text = 1;
+
+  optional bool selected = 2;
+  optional Icon leading_icon = 3;
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Atom Wrapper</summary><div class="indented"><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-80fe-b807-d861b1edd7af" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8074-9867-fccadc669d9b"><th id="~\cW" class="simple-table-header-color simple-table-header">Field</th><th id="x@dt" class="simple-table-header-color simple-table-header">Type</th><th id="zAG=" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8066-aa39-c4aea0b4531d"><td id="~\cW" class="">text</td><td id="x@dt" class="">Text</td><td id="zAG=" class="">Text component</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80f0-b6cf-c245577fa185"><td id="~\cW" class="">icon</td><td id="x@dt" class="">Icon</td><td id="zAG=" class="">Icon component</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8002-be7d-c079ec8f1e94"><td id="~\cW" class="">image</td><td id="x@dt" class="">Image</td><td id="zAG=" class="">Image component</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ce-aba4-ecd8175cbec4"><td id="~\cW" class="">button</td><td id="x@dt" class="">Button</td><td id="zAG=" class="">Button component</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8077-b1da-c75797b54528"><td id="~\cW" class="">badge</td><td id="x@dt" class="">Badge</td><td id="zAG=" class="">Badge component</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8083-855d-cf32ed749e1a"><td id="~\cW" class="">chip</td><td id="x@dt" class="">Chip</td><td id="zAG=" class="">Chip component</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8050-bf64-e0f6195dcb72"><td id="~\cW" class="">divider</td><td id="x@dt" class="">Divider</td><td id="zAG=" class="">Divider component</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80c8-9fff-c18bb15238dc"><td id="~\cW" class="">spacer</td><td id="x@dt" class="">Spacer</td><td id="zAG=" class="">Spacer component</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-8045-a21e-f80a23002582" class="">Type</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-80ae-94f1-d4da80f130a8" class="code code-wrap"><code class="language-Plain Text" style="white-space:pre-wrap;word-break:break-all">oneof atom</code></pre></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80cc-b65f-d09137b16f2f" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-8089-b075-e17850eae55e" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.atoms;
+
+import &quot;ui/atoms/text.proto&quot;;
+import &quot;ui/atoms/icon.proto&quot;;
+import &quot;ui/atoms/image.proto&quot;;
+import &quot;ui/atoms/button.proto&quot;;
+import &quot;ui/atoms/badge.proto&quot;;
+import &quot;ui/atoms/chip.proto&quot;;
+import &quot;ui/atoms/divider.proto&quot;;
+import &quot;ui/atoms/spacer.proto&quot;;
+
+message Atom {
+  oneof atom {
+    Text text = 1;
+    Icon icon = 2;
+    Image image = 3;
+    Button button = 4;
+    Badge badge = 5;
+    Chip chip = 6;
+    Divider divider = 7;
+    Spacer spacer = 8;
+  }
+}</code></pre></div></div></details></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Button Action System</summary><div class="indented"><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8027-9348-c5280063ef38" class="">
+</p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8004-8e6d-fb3ef4d48ad2" class="">Buttons should support an <strong>action field</strong>.</p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80d0-ab04-e4b0880479c7" class="">
+</p></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8064-83e5-d758f7251757" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80a0-ac15-c38b0a57adab"><th id="PxwJ" class="simple-table-header-color simple-table-header">Field</th><th id="dSuV" class="simple-table-header-color simple-table-header">Type</th><th id="|sLS" class="simple-table-header-color simple-table-header">Required</th><th id="jpEb" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ed-8a5d-fbf7ac7c3273"><td id="PxwJ" class="">label</td><td id="dSuV" class="">string</td><td id="|sLS" class="">Yes</td><td id="jpEb" class="">Button text</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ea-bf8e-e53f474b88b6"><td id="PxwJ" class="">variant</td><td id="dSuV" class="">ButtonVariant</td><td id="|sLS" class="">Yes</td><td id="jpEb" class="">Button styling</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ff-9a78-f829f31942da"><td id="PxwJ" class="">action</td><td id="dSuV" class="">Action</td><td id="|sLS" class="">No</td><td id="jpEb" class="">Action executed when tapped</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-80e8-a98d-dd217c7939ca"/></div><div style="display:contents" dir="auto"><h1 id="31e76402-5bf5-80d3-b7a7-d84d8b89c4e9" class="">1️⃣ Action Wrapper</h1></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8045-8248-e50f97c05ac5" class="">The <code>Action</code> wrapper allows <strong>multiple action types</strong>.</p></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-8036-a97e-e60c509e0f49" class="">Fields</h3></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-80f0-8e55-f5ea6814929b" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-804d-a961-fe7b832b7aac"><th id="Yg?n" class="simple-table-header-color simple-table-header">Field</th><th id="AUtb" class="simple-table-header-color simple-table-header">Type</th><th id="~Kqg" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8032-bb3a-d80aec104419"><td id="Yg?n" class="">navigation</td><td id="AUtb" class="">NavigationAction</td><td id="~Kqg" class="">Navigate to another page</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-809d-8447-dd940019257a"><td id="Yg?n" class="">popup</td><td id="AUtb" class="">PopupAction</td><td id="~Kqg" class="">Show popup/modal</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8033-8eca-cf51f71ccfd8"><td id="Yg?n" class="">alert</td><td id="AUtb" class="">AlertAction</td><td id="~Kqg" class="">Show alert dialog</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-8037-a137-fa86e285d7b3" class="">Type</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-805d-9748-e6dc8c3fe9f9" class="code code-wrap"><code class="language-Plain Text" style="white-space:pre-wrap;word-break:break-all">oneof action</code></pre></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-806b-9e68-ffa52894bfc9"/></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-800a-a1ba-f9acfbe851ab" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-803d-ab60-f75aa7fa9483" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.actions;
+
+import &quot;ui/actions/navigation_action.proto&quot;;
+import &quot;ui/actions/popup_action.proto&quot;;
+import &quot;ui/actions/alert_action.proto&quot;;
+
+message Action {
+
+  oneof action {
+    NavigationAction navigation = 1;
+    PopupAction popup = 2;
+    AlertAction alert = 3;
+  }
+}</code></pre></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-80e6-be81-f975930366f2"/></div><div style="display:contents" dir="auto"><h1 id="31e76402-5bf5-80b1-936b-fee69021dbea" class="">2️⃣ Navigation Action</h1></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8036-939f-e88a3f18e1f3" class="">Used for <strong>page navigation via </strong><code><strong>page_id</strong></code>.</p></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-8036-85e4-ee754320839a" class="">Fields</h3></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-80d6-b104-fd3796627a8c" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80b7-9d96-eca84e7fd8d9"><th id="Wmx]" class="simple-table-header-color simple-table-header">Field</th><th id="Oy\|" class="simple-table-header-color simple-table-header">Type</th><th id="x]L;" class="simple-table-header-color simple-table-header">Required</th><th id="TsD[" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-807d-9cb7-f13407fe5ad5"><td id="Wmx]" class="">page_id</td><td id="Oy\|" class="">string</td><td id="x]L;" class="">Yes</td><td id="TsD[" class="">Target page identifier</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8040-9716-c8ae1ffd78fc"><td id="Wmx]" class="">params</td><td id="Oy\|" class="">map&lt;string,string&gt;</td><td id="x]L;" class="">No</td><td id="TsD[" class="">Parameters for next page</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-80fe-af58-c66cff15ca50"/></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80f3-a411-d80a5e84fe80" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-80b8-9802-dba9f8b73b52" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.actions;
+
+message NavigationAction {
+  string page_id = 1;
+
+  map&lt;string, string&gt; params = 2;
+}</code></pre></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-8027-932d-d406fe9a7c2e"/></div><div style="display:contents" dir="auto"><h1 id="31e76402-5bf5-8073-b076-ecebf3082396" class="">3️⃣ Popup Action</h1></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80b2-aa08-e6cd0293db9e" class="">Used for <strong>showing modal / popup UI</strong>.</p></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80fc-a3b6-feb6c1e74c6a" class="">Fields</h3></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8009-8252-eca2bcfb6a65" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8012-8479-f0dac42c396c"><th id="`&lt;ej" class="simple-table-header-color simple-table-header">Field</th><th id="Pwkx" class="simple-table-header-color simple-table-header">Type</th><th id="KFNV" class="simple-table-header-color simple-table-header">Required</th><th id="g^:@" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80a9-a6d4-c0edd850691d"><td id="`&lt;ej" class="">popup_id</td><td id="Pwkx" class="">string</td><td id="KFNV" class="">Yes</td><td id="g^:@" class="">Popup configuration ID</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8074-91c6-d554578e602d"><td id="`&lt;ej" class="">dismissible</td><td id="Pwkx" class="">bool</td><td id="KFNV" class="">No</td><td id="g^:@" class="">Allow closing popup</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-8059-adb7-ef4d256747ec"/></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-8035-bac4-cc41cf4d4f66" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-8033-8443-d8965f55cb9d" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.actions;
+
+message PopupAction {
+  string popup_id = 1;
+
+  optional bool dismissible = 2;
+}</code></pre></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-8018-8391-eefe5491e06f"/></div><div style="display:contents" dir="auto"><h1 id="31e76402-5bf5-80c4-89b5-c13ecd821c9d" class="">4️⃣ Alert Action</h1></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80bf-a9c4-c3c8f95cb752" class="">Used for <strong>simple alert dialogs</strong>.</p></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-8098-831a-eeb00ea12a5c" class="">Fields</h3></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8030-a878-f0b2b460ab9b" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-800f-9197-fc90b8a0513e"><th id="bpTr" class="simple-table-header-color simple-table-header">Field</th><th id="{zmq" class="simple-table-header-color simple-table-header">Type</th><th id="X{t\" class="simple-table-header-color simple-table-header">Required</th><th id="X=dh" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8093-b239-df6232cbe932"><td id="bpTr" class="">title</td><td id="{zmq" class="">string</td><td id="X{t\" class="">Yes</td><td id="X=dh" class="">Alert title</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ac-9129-c4c54fae2a1e"><td id="bpTr" class="">message</td><td id="{zmq" class="">string</td><td id="X{t\" class="">Yes</td><td id="X=dh" class="">Alert message</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-804a-9277-fb063d51aa52"><td id="bpTr" class="">primary_button</td><td id="{zmq" class="">string</td><td id="X{t\" class="">No</td><td id="X=dh" class="">Primary button label</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-802a-847e-e03809c5358b"><td id="bpTr" class="">secondary_button</td><td id="{zmq" class="">string</td><td id="X{t\" class="">No</td><td id="X=dh" class="">Secondary button label</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-8002-bf97-da26ad2aed59"/></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-802c-a83e-ca9a9e501abd" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-801c-a089-e10ec6d86a36" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.actions;
+
+message AlertAction {
+  string title = 1;
+  string message = 2;
+
+  optional string primary_button = 3;
+  optional string secondary_button = 4;
+}</code></pre></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-8031-bdb7-f6bdf6ab6ae3"/></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-8021-a3e4-f0562b94157e" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.atoms;
+
+import &quot;ui/atoms/icon.proto&quot;;
+import &quot;ui/actions/action.proto&quot;;
+
+enum ButtonVariant {
+  BUTTON_VARIANT_UNSPECIFIED = 0;
+  PRIMARY = 1;
+  SECONDARY = 2;
+  TERTIARY = 3;
+  LINK = 4;
+}
+
+enum ButtonSize {
+  BUTTON_SIZE_UNSPECIFIED = 0;
+  SMALL = 1;
+  MEDIUM = 2;
+  LARGE = 3;
+}
+
+message Button {
+  string label = 1;
+  ButtonVariant variant = 2;
+
+  optional ButtonSize size = 3;
+  optional Icon leading_icon = 4;
+  optional bool disabled = 5;
+
+  optional stream.ui.actions.Action action = 6;
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8094-8429-c7dee891f57a" class="">
+</p></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-801d-ad75-ccf9c677398a" class="">Widget System</h3></div><div style="display:contents" dir="auto"><ul id="31e76402-5bf5-8076-ac86-f8d49e14d431" class="bulleted-list"><li style="list-style-type:disc">Widgets allow <strong>non-engineering users to assemble pages in CMS</strong> while mobile apps render them dynamically using atomic components.</li></ul></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-803b-981b-e834054987c0" class="">
+</p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80f7-b9cb-cb4780cf6d5c" class="">A page is composed of <strong>three primary containers</strong>:</p></div><div style="display:contents" dir="auto"><ul id="31e76402-5bf5-8077-88b5-dfa0bcec8a1d" class="bulleted-list"><li style="list-style-type:disc"><strong>Header</strong> → Top navigation or branding</li></ul></div><div style="display:contents" dir="auto"><ul id="31e76402-5bf5-8015-8882-cced7301c185" class="bulleted-list"><li style="list-style-type:disc"><strong>Body</strong> → Main content widgets</li></ul></div><div style="display:contents" dir="auto"><ul id="31e76402-5bf5-8094-9a6d-ef70402cfa65" class="bulleted-list"><li style="list-style-type:disc"><strong>Footer</strong> → Bottom Tab or information</li></ul></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-801f-974a-debdb57d4140" class="">
+</p></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Page Contract</summary><div class="indented"><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-80af-ab6c-fd110653ad64" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80f6-9626-dbb41fdfef95"><th id="|Uxf" class="simple-table-header-color simple-table-header">Field</th><th id="Q?n;" class="simple-table-header-color simple-table-header">Type</th><th id="Yd__" class="simple-table-header-color simple-table-header">Required</th><th id="m\lu" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-809d-89cc-cd617d1640f3"><td id="|Uxf" class="">page_id</td><td id="Q?n;" class="">string</td><td id="Yd__" class="">Yes</td><td id="m\lu" class="">Unique page identifier</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80d8-8adb-ff7e536b592c"><td id="|Uxf" class="">version</td><td id="Q?n;" class="">string</td><td id="Yd__" class="">Yes</td><td id="m\lu" class="">Page contract version</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8061-80cb-c8ac4f805b15"><td id="|Uxf" class="">header</td><td id="Q?n;" class="">Container</td><td id="Yd__" class="">No</td><td id="m\lu" class="">Header container</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80b5-9018-ebadcd932914"><td id="|Uxf" class="">body</td><td id="Q?n;" class="">Container</td><td id="Yd__" class="">Yes</td><td id="m\lu" class="">Main content container</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80c8-af0a-cf74779cb4bc"><td id="|Uxf" class="">footer</td><td id="Q?n;" class="">Container</td><td id="Yd__" class="">No</td><td id="m\lu" class="">Footer container</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-80f1-bd12-c3d754bad5e7"/></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80a4-acc9-e47db01cf475" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-8023-aeba-d24c79da15fb" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.page;
+
+import &quot;ui/layout/container.proto&quot;;
+
+message Page {
+  string page_id = 1;
+  string version = 2;
+
+  optional Container header = 3;
+  Container body = 4;
+  optional Container footer = 5;
+}</code></pre></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-801d-86a4-e84146574857"/></div><div style="display:contents" dir="auto"><h1 id="31e76402-5bf5-801b-a9e8-e14575d059d0" class="">Container</h1></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8073-b412-ed04899d62b2" class="">A container represents a <strong>section of a page layout</strong> that holds widgets.</p></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80e7-b4dc-eaf9d7a7c7f9" class="">Fields</h3></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8063-8329-c612fa1e0c3d" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-807a-aa7f-fd8e86147a0e"><th id="Xf~H" class="simple-table-header-color simple-table-header">Field</th><th id="@b&lt;q" class="simple-table-header-color simple-table-header">Type</th><th id="k~qg" class="simple-table-header-color simple-table-header">Required</th><th id="CjMo" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8025-bea1-ffcc73f26a73"><td id="Xf~H" class="">id</td><td id="@b&lt;q" class="">string</td><td id="k~qg" class="">Yes</td><td id="CjMo" class="">Container identifier</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-801d-8513-d19c8cbd6c8b"><td id="Xf~H" class="">widgets</td><td id="@b&lt;q" class="">repeated Widget</td><td id="k~qg" class="">Yes</td><td id="CjMo" class="">Ordered widgets in container</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80a9-92ad-f855dda2957d"><td id="Xf~H" class="">padding</td><td id="@b&lt;q" class="">int32</td><td id="k~qg" class="">No</td><td id="CjMo" class="">Container padding</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8084-8652-efed4bb8a123"><td id="Xf~H" class="">background_color</td><td id="@b&lt;q" class="">string</td><td id="k~qg" class="">No</td><td id="CjMo" class="">Background color</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-80a0-8324-cd3e1aa3aea6"/></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-802f-ae45-dd017710a26c" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-80a2-a7f3-e27ec54fb1dd" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.layout;
+
+import &quot;ui/widgets/widget.proto&quot;;
+
+message Container {
+  string id = 1;
+  repeated stream.ui.widgets.Widget widgets = 2;
+
+  optional int32 padding = 3;
+  optional string background_color = 4;
+}</code></pre></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8083-8842-d1275964cef3" class="">
+</p></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-80d4-9628-e16abee70edc"/></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8056-9e8e-e28bc9350294" class=""><strong>Widget Wrapper</strong></p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80fd-b7f5-eabb0f69fbfa" class="">
+</p></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8031-b639-ea1934908ddc" class="block-color-teal"><strong>Examples</strong></p></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-80c5-a2b3-c80fe0095c93" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8058-88b0-fca87c7d0837"><th id="[^Cb" class="simple-table-header-color simple-table-header">Field</th><th id="`otf" class="simple-table-header-color simple-table-header">Type</th><th id="OQrO" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-801f-a099-f51ac341ed18"><td id="[^Cb" class="">splash_logo</td><td id="`otf" class="">SplashLogoWidget</td><td id="OQrO" class="">Displays app logo</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-803b-9992-d8c86fb8568f"><td id="[^Cb" class="">hero_banner</td><td id="`otf" class="">HeroBannerWidget</td><td id="OQrO" class="">Large banner image</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80e0-9815-eb333719cd3f"><td id="[^Cb" class="">welcome_text</td><td id="`otf" class="">WelcomeTextWidget</td><td id="OQrO" class="">Title and subtitle</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8059-9604-da406c40fee2"><td id="[^Cb" class="">cta_button</td><td id="`otf" class="">CTAButtonWidget</td><td id="OQrO" class="">Call-to-action button</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-806e-81f6-c5edc6fad9c0"><td id="[^Cb" class="">social_login</td><td id="`otf" class="">SocialLoginWidget</td><td id="OQrO" class="">Social login buttons</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8039-94a3-fd19846234ae"><td id="[^Cb" class="">mobile_login</td><td id="`otf" class="">MobileLoginWidget</td><td id="OQrO" class="">Phone login section</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8058-a011-e3243d77dd49"><td id="[^Cb" class="">terms</td><td id="`otf" class="">TermsWidget</td><td id="OQrO" class="">Terms and conditions</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-805f-a7c6-fbd4f5fe067d"><td id="[^Cb" class="">continue_button</td><td id="`otf" class="">ContinueButtonWidget</td><td id="OQrO" class="">Continue button</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-8038-90e1-dda26ea1d8ee"/></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-801a-b0c0-c3e6605a9848" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-8035-a929-db278f4d97c5" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.widgets;
+
+import &quot;ui/widgets/splash_logo_widget.proto&quot;;
+import &quot;ui/widgets/hero_banner_widget.proto&quot;;
+import &quot;ui/widgets/welcome_text_widget.proto&quot;;
+import &quot;ui/widgets/cta_button_widget.proto&quot;;
+import &quot;ui/widgets/social_login_widget.proto&quot;;
+import &quot;ui/widgets/mobile_login_widget.proto&quot;;
+import &quot;ui/widgets/terms_widget.proto&quot;;
+import &quot;ui/widgets/continue_button_widget.proto&quot;;
+
+message Widget {
+
+  string widget_id = 1;
+
+  oneof widget_type {
+
+    SplashLogoWidget splash_logo = 10;
+
+    HeroBannerWidget hero_banner = 11;
+
+    WelcomeTextWidget welcome_text = 12;
+
+    CTAButtonWidget cta_button = 13;
+
+    SocialLoginWidget social_login = 14;
+
+    MobileLoginWidget mobile_login = 15;
+
+    TermsWidget terms = 16;
+
+    ContinueButtonWidget continue_button = 17;
+
+  }
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">Library</summary><div class="indented"><div style="display:contents" dir="auto"><p id="31e76402-5bf5-8020-8a06-c88a7ddcc27b" class="">The system defines a set of <strong>standard widgets</strong> used across pages.</p></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8059-bce2-e750551b8940" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80c0-8f01-e85970b69c25"><th id="zR:N" class="simple-table-header-color simple-table-header">Widget</th><th id="IXkU" class="simple-table-header-color simple-table-header">Purpose</th><th id="HI&gt;N" class="simple-table-header-color simple-table-header">Used In</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-801f-8f96-f73dddaba04d"><td id="zR:N" class="">SplashLogoWidget</td><td id="IXkU" class="">App logo display</td><td id="HI&gt;N" class="">Splash</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ff-98cf-e2ec71701ae4"><td id="zR:N" class="">HeroBannerWidget</td><td id="IXkU" class="">Large hero image</td><td id="HI&gt;N" class="">Get Started</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ab-9c49-c28821ce5f57"><td id="zR:N" class="">WelcomeTextWidget</td><td id="IXkU" class="">Title + subtitle</td><td id="HI&gt;N" class="">Landing / Login</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ac-be6a-c5af78cece91"><td id="zR:N" class="">CTAButtonWidget</td><td id="IXkU" class="">Primary action button</td><td id="HI&gt;N" class="">Get Started</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ec-a212-e689d3b2a375"><td id="zR:N" class="">SocialLoginWidget</td><td id="IXkU" class="">Social login options</td><td id="HI&gt;N" class="">Login</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8092-a238-ff35386c5ed9"><td id="zR:N" class="">MobileLoginWidget</td><td id="IXkU" class="">Phone input login</td><td id="HI&gt;N" class="">Login</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80bd-a0dd-e81f85a2aa37"><td id="zR:N" class="">TermsWidget</td><td id="IXkU" class="">Terms acceptance</td><td id="HI&gt;N" class="">Login</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80e2-897f-de63625b1c14"><td id="zR:N" class="">ContinueButtonWidget</td><td id="IXkU" class="">Form submission</td><td id="HI&gt;N" class="">Login</td></tr></div></tbody></table></div></div></details></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80e3-b539-ef3ff23cbd06" class="">
+</p></div><div style="display:contents" dir="auto"><hr id="31e76402-5bf5-80d3-87d7-c57053775802"/></div><div style="display:contents" dir="auto"><h2 id="31e76402-5bf5-80fc-a978-cfa994c61a66" class="block-color-teal">Example Widgets</h2></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">SplashLogoWidget</summary><div class="indented"><div style="display:contents" dir="ltr"><figure id="31e76402-5bf5-80a7-b740-f3612f6cde66" class="image" style="text-align:center"><a href="Stream%20Builder%20Tech%20Doc/Screenshot_2026-03-09_at_2.08.05_PM.png"><img style="width:144px" src="Stream%20Builder%20Tech%20Doc/Screenshot_2026-03-09_at_2.08.05_PM.png"/></a></figure></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-8042-a954-c73ce6c55dfe" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80df-90d6-dc5bba19d8b7"><th id="KL=l" class="simple-table-header-color simple-table-header">Field</th><th id="BSqV" class="simple-table-header-color simple-table-header">Type</th><th id="vlLW" class="simple-table-header-color simple-table-header">Required</th><th id="EeP`" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8087-925e-e3283e2f2008"><td id="KL=l" class="">logo</td><td id="BSqV" class="">Image</td><td id="vlLW" class="">Yes</td><td id="EeP`" class="">Application logo</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ef-87cc-cc1eaffd58e5"><td id="KL=l" class="">tagline</td><td id="BSqV" class="">Text</td><td id="vlLW" class="">No</td><td id="EeP`" class="">Tagline text</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8066-8e63-ec05131e63fa"><td id="KL=l" class="">spacing</td><td id="BSqV" class="">Spacer</td><td id="vlLW" class="">No</td><td id="EeP`" class="">Vertical spacing</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-8020-83d7-e22e5ee5ffb4" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-8081-8614-e2e50241b5a6" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.widgets;
+
+import &quot;ui/atoms/image.proto&quot;;
+import &quot;ui/atoms/text.proto&quot;;
+import &quot;ui/atoms/spacer.proto&quot;;
+
+message SplashLogoWidget {
+  stream.ui.atoms.Image logo = 1;
+  optional stream.ui.atoms.Text tagline = 2;
+  optional stream.ui.atoms.Spacer spacing = 3;
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">HeroBannerWidget</summary><div class="indented"><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-80c1-b5bf-dcfd73edf806" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-801d-a301-ddc15e746dc4"><th id="^oBR" class="simple-table-header-color simple-table-header">Field</th><th id="Cp{i" class="simple-table-header-color simple-table-header">Type</th><th id="}xF]" class="simple-table-header-color simple-table-header">Required</th><th id="H&gt;TX" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ef-a160-c45f30444e92"><td id="^oBR" class="">background_image</td><td id="Cp{i" class="">Image</td><td id="}xF]" class="">Yes</td><td id="H&gt;TX" class="">Banner image</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80ca-8417-ce8f993778fb"><td id="^oBR" class="">overlay_text</td><td id="Cp{i" class="">Text</td><td id="}xF]" class="">No</td><td id="H&gt;TX" class="">Optional overlay title</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-809d-b854-c77ddcbc912c"><td id="^oBR" class="">subtitle</td><td id="Cp{i" class="">Text</td><td id="}xF]" class="">No</td><td id="H&gt;TX" class="">Optional subtitle</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8093-994d-e5a6b2dd4586"><td id="^oBR" class="">primary_button</td><td id="Cp{i" class="">Button</td><td id="}xF]" class="">No</td><td id="H&gt;TX" class="">Optional Button</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80da-8832-c8f0a9258955" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-80a1-87c2-e467bae193c3" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.widgets;
+
+import &quot;ui/atoms/image.proto&quot;;
+import &quot;ui/atoms/text.proto&quot;;
+
+message HeroBannerWidget {
+  stream.ui.atoms.Image background_image = 1;
+  optional stream.ui.atoms.Text overlay_text = 2;
+  optional stream.ui.atoms.Text subtitle = 3;
+    optional stream.ui.atoms.Button primary_button = 3;
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">SocialLoginWidget</summary><div class="indented"><div style="display:contents" dir="ltr"><figure id="31e76402-5bf5-80c7-b758-ce361c4a190d" class="image"><a href="Stream%20Builder%20Tech%20Doc/Screenshot_2026-03-09_at_2.10.48_PM.png"><img style="width:471.97918701171875px" src="Stream%20Builder%20Tech%20Doc/Screenshot_2026-03-09_at_2.10.48_PM.png"/></a></figure></div><div style="display:contents" dir="ltr"><table id="31e76402-5bf5-800c-9032-de21dbbb5861" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-805b-8824-f87b876497d6"><th id="V&gt;jT" class="simple-table-header-color simple-table-header">Field</th><th id="evDD" class="simple-table-header-color simple-table-header">Type</th><th id="}_Yz" class="simple-table-header-color simple-table-header">Required</th><th id="`mJX" class="simple-table-header-color simple-table-header">Description</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-807b-9937-ca7ad8b46968"><td id="V&gt;jT" class="">google_button</td><td id="evDD" class="">Button</td><td id="}_Yz" class="">No</td><td id="`mJX" class="">Google login</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-80c6-8aa7-e1455d0abb94"><td id="V&gt;jT" class="">apple_button</td><td id="evDD" class="">Button</td><td id="}_Yz" class="">No</td><td id="`mJX" class="">Apple login</td></tr></div><div style="display:contents" dir="ltr"><tr id="31e76402-5bf5-8075-9809-cf8d830467ec"><td id="V&gt;jT" class="">facebook_button</td><td id="evDD" class="">Button</td><td id="}_Yz" class="">No</td><td id="`mJX" class="">Facebook login</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="31e76402-5bf5-80bb-abb9-c3d22ec3c301" class="">Proto</h3></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="31e76402-5bf5-80a5-af7c-dd8d2cd24661" class="code code-wrap"><code class="language-Protobuf" style="white-space:pre-wrap;word-break:break-all">syntax = &quot;proto3&quot;;
+
+package stream.ui.widgets;
+
+import &quot;ui/atoms/button.proto&quot;;
+
+message SocialLoginWidget {
+  optional stream.ui.atoms.Button google_button = 1;
+  optional stream.ui.atoms.Button apple_button = 2;
+  optional stream.ui.atoms.Button facebook_button = 3;
+}</code></pre></div></div></details></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80af-9510-fac00a80080b" class="">
+</p></div></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
