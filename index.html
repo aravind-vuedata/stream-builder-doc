@@ -744,6 +744,77 @@ body {
 	max-width: none;
 }
 
+body.auth-locked {
+	overflow: hidden;
+}
+
+body.auth-locked article.page {
+	filter: blur(6px);
+	pointer-events: none;
+	user-select: none;
+}
+
+.auth-gate {
+	position: fixed;
+	inset: 0;
+	z-index: 1400;
+	display: grid;
+	place-items: center;
+	background: rgba(2, 6, 23, 0.82);
+	backdrop-filter: blur(6px);
+}
+
+.auth-card {
+	width: min(92vw, 360px);
+	border: 1px solid rgba(56, 189, 248, 0.32);
+	border-radius: 14px;
+	padding: 1rem;
+	background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.9) 100%);
+	box-shadow: 0 18px 38px rgba(2, 6, 23, 0.56);
+}
+
+.auth-card h3 {
+	margin: 0 0 0.7rem;
+	font-size: 1.1rem;
+}
+
+.auth-card p {
+	margin: 0 0 0.8rem;
+	color: #cbd5e1;
+	font-size: 0.9rem;
+}
+
+.auth-field {
+	display: block;
+	width: 100%;
+	border: 1px solid rgba(56, 189, 248, 0.28);
+	border-radius: 10px;
+	background: rgba(2, 6, 23, 0.7);
+	color: #e2e8f0;
+	padding: 0.56rem 0.65rem;
+	margin-bottom: 0.62rem;
+	font: inherit;
+}
+
+.auth-submit {
+	width: 100%;
+	border: 0;
+	border-radius: 10px;
+	padding: 0.6rem 0.75rem;
+	background: linear-gradient(90deg, #06b6d4 0%, #0e7490 100%);
+	color: #fff;
+	font-weight: 700;
+	font: inherit;
+	cursor: pointer;
+}
+
+.auth-error {
+	min-height: 1.1rem;
+	margin: 0.55rem 0 0;
+	font-size: 0.82rem;
+	color: #fca5a5;
+}
+
 article.page {
 	max-width: 900px;
 	margin: 2em auto;
@@ -1724,9 +1795,41 @@ message SocialLoginWidget {
   optional stream.ui.atoms.Button facebook_button = 3;
 }</code></pre></div></div></details></div><div style="display:contents" dir="auto"><p id="31e76402-5bf5-80af-9510-fac00a80080b" class="">
 </p></div></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span><script>
-(() => {
-	const body = document.body;
-	const revealTargets = Array.from(document.querySelectorAll("h2, h3, p, li, table, figure, pre, details"));
+	(() => {
+		const body = document.body;
+		const AUTH_KEY = "stream-doc-auth-ok";
+		const lockPage = () => body.classList.add("auth-locked");
+		const unlockPage = () => body.classList.remove("auth-locked");
+		const hasAccess = sessionStorage.getItem(AUTH_KEY) === "1";
+		if (!hasAccess) {
+			lockPage();
+			const gate = document.createElement("div");
+			gate.className = "auth-gate";
+			gate.innerHTML = `<form class="auth-card" autocomplete="off"><h3>Login Required</h3><p>Enter username and password to access this page.</p><input class="auth-field" name="username" type="text" placeholder="Username" required /><input class="auth-field" name="password" type="password" placeholder="Password" required /><button class="auth-submit" type="submit">Login</button><p class="auth-error" aria-live="polite"></p></form>`;
+			document.body.appendChild(gate);
+			const form = gate.querySelector("form");
+			const userInput = gate.querySelector("input[name='username']");
+			const passInput = gate.querySelector("input[name='password']");
+			const errorEl = gate.querySelector(".auth-error");
+			if (form && userInput && passInput && errorEl) {
+				setTimeout(() => userInput.focus(), 0);
+				form.addEventListener("submit", (event) => {
+					event.preventDefault();
+					const username = userInput.value.trim();
+					const password = passInput.value;
+					if (username === "admin" && password === "admin-boss") {
+						sessionStorage.setItem(AUTH_KEY, "1");
+						unlockPage();
+						gate.remove();
+					} else {
+						errorEl.textContent = "Invalid username or password.";
+						passInput.value = "";
+						passInput.focus();
+					}
+				});
+			}
+		}
+		const revealTargets = Array.from(document.querySelectorAll("h2, h3, p, li, table, figure, pre, details"));
 	revealTargets.forEach((el) => el.classList.add("js-reveal"));
 
 	const revealObserver = new IntersectionObserver(
