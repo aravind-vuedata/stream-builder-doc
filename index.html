@@ -1062,6 +1062,9 @@ figure img:hover {
 	word-break: normal !important;
 	line-height: 1.45;
 	tab-size: 2;
+	font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace !important;
+	font-size: 1.03rem;
+	font-variant-ligatures: contextual;
 }
 
 /* Force dark code blocks even when Prism/default styles are injected inline */
@@ -1080,6 +1083,45 @@ code[class*="language-"] {
 	background: transparent !important;
 	color: #e2e8f0 !important;
 	text-shadow: none !important;
+	font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace !important;
+	font-size: 1.03rem !important;
+	line-height: 1.5 !important;
+	font-variant-ligatures: contextual;
+}
+
+/* Proto-like syntax palette */
+pre code .token.keyword,
+pre code .token.atrule {
+	color: #7cc7ff !important;
+}
+
+pre code .token.class-name,
+pre code .token.type,
+pre code .token.builtin,
+pre code .token.namespace {
+	color: #f3ee9b !important;
+}
+
+pre code .token.string,
+pre code .token.attr-value,
+pre code .token.char {
+	color: #b8e35a !important;
+}
+
+pre code .token.number,
+pre code .token.boolean,
+pre code .token.constant {
+	color: #ffcf7d !important;
+}
+
+pre code .token.punctuation,
+pre code .token.operator {
+	color: #cdd6df !important;
+}
+
+pre code .token.comment {
+	color: #7f8ea3 !important;
+	font-style: italic;
 }
 
 .proto-controls {
